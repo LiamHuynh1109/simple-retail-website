@@ -99,8 +99,8 @@ const products = [
     {
          id: 13,
         name: "Adatatron",
-        category: "OGN",
-        price: 20,000,
+        category: "common",
+        price: 20.000,
         description: "Adatatron",
         emoji: "🌑"
     }
