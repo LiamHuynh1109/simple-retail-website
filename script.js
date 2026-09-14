@@ -1,110 +1,79 @@
-// Sample product data
-const products = [
-    {
-        id: 1,
-        name: "Rare Dragon Card",
-        category: "rare",
-        price: 45.99,
-        description: "Legendary dragon with powerful abilities",
-        emoji: "🐉"
-    },
-    {
-        id: 2,
-        name: "Shadow Assassin",
-        category: "rare",
-        price: 38.50,
-        description: "Stealthy unit perfect for aggressive decks",
-        emoji: "🗡️"
-    },
-    {
-        id: 3,
-        name: "Common Soldier Pack",
-        category: "common",
-        price: 2.99,
-        description: "Essential common cards for any deck",
-        emoji: "🪖"
-    },
-    {
-        id: 4,
-        name: "Booster Pack - Forest Set",
-        category: "booster",
-        price: 8.99,
-        description: "Contains 10 random forest-themed cards",
-        emoji: "🌲"
-    },
-    {
-        id: 5,
-        name: "Ultimate Starter Deck",
-        category: "deck",
-        price: 24.99,
-        description: "Perfect for beginners starting their journey",
-        emoji: "📚"
-    },
-    {
-        id: 6,
-        name: "Fire Elemental",
-        category: "rare",
-        price: 52.00,
-        description: "Devastating AoE damage dealer",
-        emoji: "🔥"
-    },
-    {
-        id: 7,
-        name: "Booster Pack - Ice Set",
-        category: "booster",
-        price: 8.99,
-        description: "Contains 10 random ice-themed cards",
-        emoji: "❄️"
-    },
-    {
-        id: 8,
-        name: "Mystical Wizard",
-        category: "rare",
-        price: 42.50,
-        description: "Master of arcane magic and spells",
-        emoji: "🧙"
-    },
-    {
-        id: 9,
-        name: "Common Archer Pack",
-        category: "common",
-        price: 3.50,
-        description: "Ranged attackers for strategic gameplay",
-        emoji: "🏹"
-    },
-    {
-        id: 10,
-        name: "Competitive Ranked Deck",
-        category: "deck",
-        price: 39.99,
-        description: "Tournament-ready competitive deck",
-        emoji: "🏆"
-    },
-    {
-        id: 11,
-        name: "Light Guardian",
-        category: "rare",
-        price: 48.75,
-        description: "Protective support unit for control decks",
-        emoji: "👼"
-    },
-    {
-        id: 12,
-        name: "Booster Pack - Shadow Set",
-        category: "booster",
-        price: 9.99,
-        description: "Contains 10 random shadow-themed cards",
-        emoji: "🌑"
-    },
-    {
-         id: 13,
-        name: "Adatatron",
-        category: "common",
-        price: 20.000,
-        description: "Adatatron",
-        emoji: "🌑"
+```javascript
+// Fetch Riftbound data from GitHub
+let products = [];
+
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        // Load from Riftbound database
+        products = await loadRiftboundCards();
+        console.log(`✅ Loaded ${products.length} Riftbound cards`);
+    } catch (error) {
+        console.error('❌ Failed to load cards:', error);
+        // Fallback to sample products
+        products = getSampleProducts();
     }
-];
+    
+    loadProducts(products);
+    loadCartFromStorage();
+    updateCartDisplay();
+});
+
+// Fetch and transform Riftbound cards
+async function loadRiftboundCards() {
+    const gistUrl = 'https://gist.githubusercontent.com/OwenMelbz/e04dadf641cc9b81cb882b4612343112/raw/riftbound.json';
+    
+    const response = await fetch(gistUrl);
+    const data = await response.json();
+    
+    // Transform Riftbound format to our format
+    return data.map((card, index) => ({
+        id: card.id || index,
+        name: card.name,
+        category: card.rarity?.id || 'common',
+        price: getRandomPrice(card.rarity?.id),  // Generate price based on rarity
+        description: stripHtml(card.text) || card.cardType?.[0]?.label || 'Riftbound Card',
+        image: card.cardImage?.url,
+        emoji: getEmojiForRarity(card.rarity?.id),
+        energy: card.energy,
+        power: card.power,
+        health: card.health,
+        set: card.setName,
+        cardType: card.cardType?.[0]?.label,
+        rarity: card.rarity?.label,
+        domains: card.domains?.map(d => d.label)
+    }));
+}
+
+// Generate random price based on rarity
+function getRandomPrice(rarity) {
+    const rarityPrices = {
+        'common': () => Math.random() * 2 + 1,          // $1-3
+        'uncommon': () => Math.random() * 5 + 3,        // $3-8
+        'rare': () => Math.random() * 15 + 10,          // $10-25
+        'epic': () => Math.random() * 30 + 20,          // $20-50
+        'legendary': () => Math.random() * 50 + 40      // $40-90
+    };
+    
+    const priceFn = rarityPrices[rarity] || rarityPrices['common'];
+    return parseFloat(priceFn().toFixed(2));
+}
+
+// Get emoji based on rarity
+function getEmojiForRarity(rarity) {
+    const emojiMap = {
+        'common': '⚪',
+        'uncommon': '🟢',
+        'rare': '🔵',
+        'epic': '🟣',
+        'legendary': '🟡'
+    };
+    return emojiMap[rarity] || '🎴';
+}
+
+// Strip HTML tags from card text
+function stripHtml(html) {
+    if (!html) return '';
+    return html.replace(/<[^>]*>/g, '').substring(0, 100);
 
 // Shopping cart
 let cart = [];
