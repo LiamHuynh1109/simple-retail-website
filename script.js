@@ -95,6 +95,14 @@ const products = [
         price: 9.99,
         description: "Contains 10 random shadow-themed cards",
         emoji: "🌑"
+    },
+    {
+         id: 13,
+        name: "Adatatron",
+        category: "OGN",
+        price: 20,000,
+        description: "Adatatron",
+        emoji: "🌑"
     }
 ];
 
